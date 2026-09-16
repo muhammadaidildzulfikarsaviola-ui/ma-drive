@@ -1,1 +1,51 @@
-void MaDriveAudioProcessorEditor::resized(){int w=getWidth(),h=getHeight(),pw=juce::jlimit(225,270,w/4),lx=20,rx=w-pw-20,k=juce::jlimit(58,78,pw/3);auto K=[this,k](int i,int x,int y){knobs[i]->setBounds(x,y,k,k);labels[i]->setBounds(x-6,y+k-2,k+12,20);};auto B=[this](int f,int c,int x,int y,int W){int g=4,q=(W-g*(c-1))/c;for(int z=0;z<c;++z)buttons[f+z]->setBounds(x+z*(q+g),y,q,30);};buttons[14]->setBounds(lx,48,48,30);buttons[15]->setBounds(lx+52,48,48,30);K(0,lx+5,285);K(1,lx+pw/2-k/2,285);K(2,lx+5,395);K(3,lx+pw/2-k/2,395);B(0,3,lx,500,pw);B(3,4,lx,537,pw);B(7,3,lx,574,pw);K(4,rx+3,285);K(5,rx+pw/2-k/2,285);K(6,rx+pw-k-3,285);B(10,3,rx,395,pw);K(7,rx+3,455);K(8,rx+pw/2-k/2,455);K(9,rx+pw-k-3,455);K(10,rx+3,565);K(11,rx+pw/2-k/2,565);buttons[13]->setBounds(rx+pw-100,h-45,100,30);buttons[16]->setBounds(w/2-100,h-42,200,28);}
+void MaDriveAudioProcessorEditor::resized()
+{
+    const int w = getWidth();
+    const int h = getHeight();
+    const int pw = juce::jlimit(215, 245, w / 4);
+    const int lx = 28;
+    const int rx = w - pw - 28;
+    const int knob = juce::jlimit(72, 86, pw / 3);
+
+    auto K = [this, knob](int i, int x, int y)
+    {
+        knobs[i]->setBounds(x, y, knob, knob + 20);
+        labels[i]->setBounds(x - 4, y + knob + 15, knob + 8, 16);
+    };
+
+    auto B = [this](int first, int count, int x, int y, int width, int height = 29)
+    {
+        const int gap = 4;
+        const int bw = (width - gap * (count - 1)) / count;
+        for (int i = 0; i < count; ++i)
+            buttons[first + i]->setBounds(x + i * (bw + gap), y, bw, height);
+    };
+
+    // A/B at the top-left.
+    buttons[14]->setBounds(lx + 14, 82, 55, 30);
+    buttons[15]->setBounds(lx + 73, 82, 55, 30);
+
+    // LEFT: Soft Clip controls.
+    K(0, lx + 2, 245);
+    K(1, lx + pw / 2 + 2, 245);
+    K(2, lx + 2, 335);
+    K(3, lx + pw / 2 + 2, 335);
+    B(0, 3, lx, 438, pw, 28);
+    B(3, 4, lx, 471, pw, 28);
+    B(7, 3, lx, 504, pw, 28);
+
+    // RIGHT: Drive controls.
+    K(4, rx + 1, 245);
+    K(5, rx + pw / 2 - knob / 2, 245);
+    K(6, rx + pw - knob - 1, 245);
+    B(10, 3, rx, 337, pw, 28);
+    K(7, rx + 1, 350);
+    K(8, rx + pw / 2 - knob / 2, 350);
+    K(9, rx + pw - knob - 1, 350);
+    K(10, rx + 1, 435);
+    K(11, rx + pw / 2 - knob / 2, 435);
+
+    // Global controls.
+    buttons[13]->setBounds(w - 105, h - 34, 88, 28);
+    buttons[16]->setBounds(w / 2 - 70, h - 34, 140, 28);
+}
