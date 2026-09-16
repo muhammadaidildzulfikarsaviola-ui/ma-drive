@@ -12,20 +12,29 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
     const juce::String getName() const override { return "Ma Drive"; }
-    bool acceptsMidi() const override { return false; } bool producesMidi() const override { return false; }
-    bool isMidiEffect() const override { return false; } double getTailLengthSeconds() const override { return 0.0; }
-    int getNumPrograms() override { return 1; } int getCurrentProgram() override { return 0; }
-    void setCurrentProgram (int) override {} const juce::String getProgramName (int) override { return "Default"; }
+    bool acceptsMidi() const override { return false; }
+    bool producesMidi() const override { return false; }
+    bool isMidiEffect() const override { return false; }
+    double getTailLengthSeconds() const override { return 0.0; }
+    int getNumPrograms() override { return 1; }
+    int getCurrentProgram() override { return 0; }
+    void setCurrentProgram (int) override {}
+    const juce::String getProgramName (int) override { return "Default"; }
     void changeProgramName (int, const juce::String&) override {}
     void getStateInformation (juce::MemoryBlock&) override;
     void setStateInformation (const void*, int) override;
+
     juce::AudioProcessorValueTreeState parameters;
     std::atomic<float> inputPeak { -100.0f }, outputPeak { -100.0f }, reduction { 0.0f };
     std::array<std::atomic<float>, 3> monitorPeaks { -100.0f, -100.0f, -100.0f };
-    std::atomic<float> thresholdForDisplay { -12.0f };
+    std::atomic<float> thresholdForDisplay { -8.0f };
     std::array<float, 256> inputHistory {}, outputHistory {}, grHistory {};
     std::atomic<int> historyWrite { 0 };
-    void copyAB (bool toB); void recallAB (bool useB); void switchAB (bool useB);
+
+    void copyAB (bool toB);
+    void recallAB (bool useB);
+    void switchAB (bool useB);
+
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout makeLayout();
     float shape (float x, int clipStyle, int driveMode, float character) const;
