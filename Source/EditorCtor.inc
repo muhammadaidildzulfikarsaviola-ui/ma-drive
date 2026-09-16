@@ -1,2 +1,170 @@
-MaDriveAudioProcessorEditor::MaDriveAudioProcessorEditor(MaDriveAudioProcessor&x):AudioProcessorEditor(&x),p(x){const char*i[]={"input","threshold","knee","clipOutput","drive","tone","driveOutput","mix","character","hpf","lpf","trim"};const char*n[]={"INPUT","THRESHOLD","KNEE","OUTPUT","DRIVE","TONE","OUTPUT","MIX","CHARACTER","HPF","LPF","TRIM"};const float pi=juce::MathConstants<float>::pi;for(int z=0;z<12;++z){auto*s=knobs.add(new juce::Slider(juce::Slider::RotaryHorizontalVerticalDrag,juce::Slider::TextBoxBelow));s->setLookAndFeel(&hardwareLookAndFeel);float start=pi*1.25f,end=pi*2.75f;if(z==9){start=pi*1.1666667f;end=pi*2.8333333f;}if(z==10){start=pi*1.8333333f;end=pi*1.6666667f;}s->setRotaryParameters(start,end,true);s->setColour(juce::Slider::textBoxTextColourId,juce::Colours::white);s->setColour(juce::Slider::textBoxBackgroundColourId,juce::Colour(0xff4e4b46));s->setColour(juce::Slider::textBoxOutlineColourId,juce::Colour(0xff9f9a91));s->setNumDecimalPlacesToDisplay((z==7||z==8)?0:2);if(z==0||z==1||z==2||z==3||z==4||z==6||z==11)s->setTextValueSuffix(" dB");if(z==7||z==8)s->setTextValueSuffix(" %");if(z==9)s->textFromValueFunction=[](double v){return v<=0.001?juce::String("OFF"):juce::String(v,1)+" Hz";};if(z==10)s->textFromValueFunction=[](double v){return v<=0.001?juce::String("OFF"):juce::String(v,0)+" Hz";};addAndMakeVisible(s);attachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(p.parameters,i[z],*s));auto*l=labels.add(new juce::Label({},n[z]));l->setJustificationType(juce::Justification::centred);l->setColour(juce::Label::textColourId,juce::Colours::black);l->setFont(juce::FontOptions(12).withStyle("Bold"));addAndMakeVisible(l);}const char*b[]={"SOFT","MEDIUM","HARD","1x","2x","4x","8x","STEREO","M/S","MULTI BAND","GROWL","ODD","TAPE","BYPASS","A","B","SUPPORT ME"};for(auto q:b){auto*t=buttons.add(new juce::TextButton(q));t->setColour(juce::TextButton::buttonColourId,juce::Colour(0xff121313));t->setColour(juce::TextButton::buttonOnColourId,juce::Colour(0xffff8a2a));addAndMakeVisible(t);}auto S=[this](const char*i,int f,int c){for(int z=0;z<c;++z){buttons[f+z]->setRadioGroupId(f+1);buttons[f+z]->setClickingTogglesState(true);buttons[f+z]->onClick=[this,i,z]{if(auto*q=dynamic_cast<juce::AudioParameterChoice*>(p.parameters.getParameter(i)))q->setValueNotifyingHost(q->convertTo0to1(z));};}};S("clipStyle",0,3);S("oversampling",3,4);S("processMode",7,3);S("driveMode",10,3);buttons[13]->setClickingTogglesState(true);buttonAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(p.parameters,"bypass",*buttons[13]));buttons[14]->onClick=[this]{if(juce::ModifierKeys::getCurrentModifiers().isShiftDown())p.copyAB(false);else{p.copyAB(activeB);p.switchAB(false);activeB=false;}};buttons[15]->onClick=[this]{if(juce::ModifierKeys::getCurrentModifiers().isShiftDown())p.copyAB(true);else{p.copyAB(activeB);p.switchAB(true);activeB=true;}};buttons[16]->onClick=[] {juce::URL("https://wadidaw.com").launchInDefaultBrowser();};setSize(1050,700);setResizable(true,true);setResizeLimits(980,620,1800,1100);startTimerHz(30);}
-MaDriveAudioProcessorEditor::~MaDriveAudioProcessorEditor(){stopTimer();for(auto*s:knobs)s->setLookAndFeel(nullptr);}
+MaDriveAudioProcessorEditor::MaDriveAudioProcessorEditor(MaDriveAudioProcessor& x)
+    : AudioProcessorEditor(&x), p(x)
+{
+    setLookAndFeel(&hardwareLookAndFeel);
+
+    const char* ids[] = { "input", "threshold", "knee", "clipOutput", "drive", "tone", "driveOutput", "mix", "character", "hpf", "lpf", "trim" };
+    const char* names[] = { "INPUT", "THRESHOLD", "KNEE", "OUTPUT", "DRIVE", "TONE", "OUTPUT", "MIX", "CHARACTER", "HPF", "LPF", "TRIM" };
+    const float pi = juce::MathConstants<float>::pi;
+
+    for (int i = 0; i < 12; ++i)
+    {
+        auto* s = knobs.add(new juce::Slider(juce::Slider::RotaryHorizontalVerticalDrag,
+                                              juce::Slider::TextBoxBelow));
+        s->setLookAndFeel(&hardwareLookAndFeel);
+        s->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 92, 20);
+        s->setColour(juce::Slider::textBoxTextColourId, juce::Colours::white);
+        s->setColour(juce::Slider::textBoxBackgroundColourId, juce::Colour(0xff45433f));
+        s->setColour(juce::Slider::textBoxOutlineColourId, juce::Colour(0xff77736b));
+        s->setNumDecimalPlacesToDisplay((i == 7 || i == 8) ? 0 : 2);
+
+        float start = pi * 1.25f;
+        float end = pi * 2.75f;
+
+        // Bipolar controls: 0 dB sits at 12 o'clock.
+        if (i == 0 || i == 2 || i == 3 || i == 6 || i == 11)
+        {
+            start = pi * 1.25f;
+            end = pi * 2.75f;
+        }
+        // Threshold: minimum at ~7 o'clock, 0 dB at ~5 o'clock.
+        else if (i == 1)
+        {
+            start = pi * 1.1666667f;
+            end = pi * 2.8333333f;
+        }
+        // Drive: 0 at ~7 o'clock, maximum at ~5 o'clock.
+        else if (i == 4)
+        {
+            start = pi * 1.1666667f;
+            end = pi * 2.8333333f;
+        }
+        // Tone: 0.5 is the physical centre.
+        else if (i == 5)
+        {
+            start = pi * 1.25f;
+            end = pi * 2.75f;
+        }
+        // Mix / Character: 0 at ~7, 100 at ~5.
+        else if (i == 7 || i == 8)
+        {
+            start = pi * 1.1666667f;
+            end = pi * 2.8333333f;
+        }
+        // HPF: OFF at ~7, increasing frequency toward ~5.
+        else if (i == 9)
+        {
+            start = pi * 1.1666667f;
+            end = pi * 2.8333333f;
+        }
+        // LPF: OFF at ~5:30, 20 kHz starts at ~5 and moves counter-clockwise.
+        else if (i == 10)
+        {
+            start = pi * 1.8333333f;
+            end = pi * 1.6666667f;
+        }
+
+        s->setRotaryParameters(start, end, true);
+
+        if (i == 7 || i == 8)
+            s->setTextValueSuffix(" %");
+        else if (i == 9)
+            s->textFromValueFunction = [](double v) { return v <= 0.001 ? juce::String("OFF") : juce::String(v, 1) + " Hz"; };
+        else if (i == 10)
+            s->textFromValueFunction = [](double v) { return v <= 0.001 ? juce::String("OFF") : juce::String(v, 0) + " Hz"; };
+        else if (i == 5)
+            s->setTextValueSuffix("");
+        else
+            s->setTextValueSuffix(" dB");
+
+        addAndMakeVisible(s);
+        attachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            p.parameters, ids[i], *s));
+
+        auto* l = labels.add(new juce::Label({}, names[i]));
+        l->setJustificationType(juce::Justification::centred);
+        l->setColour(juce::Label::textColourId, juce::Colours::black);
+        l->setFont(juce::FontOptions(11.0f).withStyle("Bold"));
+        addAndMakeVisible(l);
+    }
+
+    const char* buttonNames[] = {
+        "SOFT", "MEDIUM", "HARD",
+        "1x", "2x", "4x", "8x",
+        "STEREO", "M/S", "MULTI BAND",
+        "GROWL", "ODD", "TAPE",
+        "BYPASS", "A", "B", "SUPPORT ME"
+    };
+
+    for (const auto* text : buttonNames)
+    {
+        auto* b = buttons.add(new juce::TextButton(text));
+        b->setColour(juce::TextButton::buttonColourId, juce::Colour(0xff151616));
+        b->setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xffff8a2a));
+        b->setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+        b->setColour(juce::TextButton::textColourOnId, juce::Colours::white);
+        b->setClickingTogglesState(false);
+        addAndMakeVisible(b);
+    }
+
+    auto makeChoiceButtons = [this](const char* parameterId, int first, int count)
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            buttons[first + i]->onClick = [this, parameterId, i]
+            {
+                if (auto* parameter = dynamic_cast<juce::AudioParameterChoice*>(p.parameters.getParameter(parameterId)))
+                    parameter->setValueNotifyingHost(parameter->convertTo0to1(i));
+            };
+        }
+    };
+
+    makeChoiceButtons("clipStyle", 0, 3);
+    makeChoiceButtons("oversampling", 3, 4);
+    makeChoiceButtons("processMode", 7, 3);
+    makeChoiceButtons("driveMode", 10, 3);
+
+    buttons[13]->setClickingTogglesState(true);
+    buttonAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+        p.parameters, "bypass", *buttons[13]));
+
+    buttons[14]->onClick = [this]
+    {
+        if (juce::ModifierKeys::getCurrentModifiers().isShiftDown())
+            p.copyAB(false);
+        else
+        {
+            p.recallAB(false);
+            activeB = false;
+        }
+    };
+
+    buttons[15]->onClick = [this]
+    {
+        if (juce::ModifierKeys::getCurrentModifiers().isShiftDown())
+            p.copyAB(true);
+        else
+        {
+            p.recallAB(true);
+            activeB = true;
+        }
+    };
+
+    buttons[16]->onClick = []
+    {
+        juce::URL("https://wadidaw.com").launchInDefaultBrowser();
+    };
+
+    setSize(900, 550);
+    setResizable(true, true);
+    setResizeLimits(900, 550, 1500, 900);
+    startTimerHz(30);
+}
+
+MaDriveAudioProcessorEditor::~MaDriveAudioProcessorEditor()
+{
+    stopTimer();
+    setLookAndFeel(nullptr);
+    for (auto* s : knobs)
+        s->setLookAndFeel(nullptr);
+}
