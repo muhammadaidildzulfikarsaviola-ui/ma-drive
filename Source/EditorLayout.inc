@@ -27,7 +27,7 @@ void MaDriveAudioProcessorEditor::resized()
             buttons[first + i]->setBounds(x + i * (bw + gap), y, bw, height);
     };
 
-    // A/B: dedicated strip above the meters. No overlap.
+    // A/B stays in its own strip and never touches the meters.
     buttons[14]->setBounds(leftX + 4, 82, 54, 29);
     buttons[15]->setBounds(leftX + 62, 82, 54, 29);
 
@@ -53,7 +53,7 @@ void MaDriveAudioProcessorEditor::resized()
     K(8, c2, 360);
     K(9, c3, 360);
 
-    // Bottom utility footer: LPF + Trim live with Support + Bypass.
+    // Footer: LPF, Trim, Support Me and Bypass live together at the bottom.
     const int footerY = h - 91;
     const int small = 54;
     KS(10, rightX + 5, footerY + 2, small);
