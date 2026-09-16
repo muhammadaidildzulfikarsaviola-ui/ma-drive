@@ -6,17 +6,18 @@ void MaDriveAudioProcessorEditor::resized()
     const int leftX = 28;
     const int rightX = w - sideW - 28;
     const int knob = juce::jlimit(62, 68, (sideW - 18) / 3);
+    const int footerY = h - 78;
 
     auto K = [this, knob](int i, int x, int y)
     {
         knobs[i]->setBounds(x, y, knob, knob + 18);
-        labels[i]->setBounds(x - 4, y + knob + 15, knob + 8, 16);
+        labels[i]->setBounds(x - 5, y + knob + 12, knob + 10, 16);
     };
 
     auto KS = [this](int i, int x, int y, int size)
     {
         knobs[i]->setBounds(x, y, size, size + 16);
-        labels[i]->setBounds(x - 5, y + size + 12, size + 10, 15);
+        labels[i]->setBounds(x - 5, y + size + 11, size + 10, 15);
     };
 
     auto B = [this](int first, int count, int x, int y, int width, int height = 27)
@@ -27,38 +28,34 @@ void MaDriveAudioProcessorEditor::resized()
             buttons[first + i]->setBounds(x + i * (bw + gap), y, bw, height);
     };
 
-    // A/B stays in its own strip and never touches the meters.
-    buttons[14]->setBounds(leftX + 4, 82, 54, 29);
-    buttons[15]->setBounds(leftX + 62, 82, 54, 29);
+    // Header A/B strip.
+    buttons[14]->setBounds(42, 28, 48, 30);
+    buttons[15]->setBounds(92, 28, 48, 30);
 
-    // LEFT: Soft Clip.
-    K(0, leftX + 2, 235);
-    K(1, leftX + sideW / 2 + 1, 235);
-    K(2, leftX + 2, 325);
-    K(3, leftX + sideW / 2 + 1, 325);
-    B(0, 3, leftX, 408, sideW, 26);
-    B(3, 4, leftX, 440, sideW, 26);
-    B(7, 3, leftX, 472, sideW, 26);
+    // LEFT / SOFT CLIP.
+    K(0, leftX + 4, 205);
+    K(1, leftX + sideW / 2 + 2, 205);
+    K(2, leftX + 4, 300);
+    K(3, leftX + sideW / 2 + 2, 300);
+    B(0, 3, leftX, 390, sideW, 27);
+    B(3, 4, leftX, 424, sideW, 27);
+    B(7, 3, leftX, 458, sideW, 27);
 
-    // RIGHT: Drive.
-    const int c1 = rightX + 1;
+    // RIGHT / DRIVE.
+    const int c1 = rightX + 2;
     const int c2 = rightX + sideW / 3;
     const int c3 = rightX + (sideW * 2) / 3 - 2;
+    K(4, c1, 205);
+    K(5, c2, 205);
+    K(6, c3, 205);
+    B(10, 3, rightX, 300, sideW, 27);
+    K(7, c1, 315);
+    K(8, c3, 315);
+    K(9, c1, 385);
+    K(10, c2, 385);
 
-    K(4, c1, 235);
-    K(5, c2, 235);
-    K(6, c3, 235);
-    B(10, 3, rightX, 322, sideW, 26);
-    K(7, c1, 360);
-    K(8, c2, 360);
-    K(9, c3, 360);
-
-    // Footer: LPF, Trim, Support Me and Bypass live together at the bottom.
-    const int footerY = h - 91;
-    const int small = 54;
-    KS(10, rightX + 5, footerY + 2, small);
-    KS(11, rightX + 67, footerY + 2, small);
-
-    buttons[16]->setBounds(w / 2 - 90, h - 34, 180, 28);
-    buttons[13]->setBounds(w - 118, h - 34, 98, 28);
+    // FOOTER: TRIM + SUPPORT ME + BYPASS.
+    KS(11, w - 135, footerY - 2, 54);
+    buttons[16]->setBounds(w / 2 - 95, footerY + 23, 190, 30);
+    buttons[13]->setBounds(w - 270, footerY + 23, 110, 30);
 }
