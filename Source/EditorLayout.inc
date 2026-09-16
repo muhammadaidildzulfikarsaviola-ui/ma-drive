@@ -1,99 +1,97 @@
 void MaDriveAudioProcessorEditor::resized()
 {
+    const int w = getWidth();
+    const int h = getHeight();
+
     auto bounds = getLocalBounds();
 
-    // 1. HEADER AREA (~45px)
-    auto headerArea = bounds.removeFromTop(45);
-    if (buttons.size() > 15)
-    {
-        auto abArea = headerArea.removeFromLeft(120).reduced(10, 8);
-        buttons[14]->setBounds(abArea.removeFromLeft(45));
-        abArea.removeFromLeft(5);
-        buttons[15]->setBounds(abArea.removeFromLeft(45));
-    }
+    // Header / top chassis
+    auto header = bounds.removeFromTop(116).reduced(28, 12);
+    buttons[14]->setBounds(header.getX(), header.getY() + 22, 44, 32);
+    buttons[15]->setBounds(header.getX() + 48, header.getY() + 22, 44, 32);
 
-    // 2. FOOTER AREA (~45px)
-    auto footerArea = bounds.removeFromBottom(45);
-    if (buttons.size() > 16)
-        buttons[16]->setBounds(juce::Rectangle<int>(footerArea.getCentreX() - 75, footerArea.getY() + 8, 150, 28));
+    // Footer / bottom chassis
+    auto footer = bounds.removeFromBottom(82).reduced(28, 10);
+    buttons[16]->setBounds(footer.getCentreX() - 95, footer.getY() + 14, 190, 34);
+    buttons[13]->setBounds(footer.getRight() - 124, footer.getY() + 16, 104, 32);
+    labels[11]->setBounds(footer.getRight() - 215, footer.getY() + 12, 78, 14);
+    knobs[11]->setBounds(footer.getRight() - 207, footer.getY() + 27, 62, 48);
 
-    if (knobs.size() > 11 && labels.size() > 11)
-    {
-        auto trimArea = footerArea.removeFromRight(90).reduced(2);
-        labels[11]->setBounds(trimArea.removeFromTop(12));
-        knobs[11]->setBounds(trimArea);
-    }
+    // Main three-section hardware layout
+    auto main = bounds.reduced(18, 8);
+    const int gap = 12;
+    const int leftW = juce::jmax(270, (main.getWidth() - gap * 2) / 3);
+    const int rightW = leftW;
 
-    if (buttons.size() > 13)
-        buttons[13]->setBounds(footerArea.removeFromRight(95).reduced(8, 8));
+    auto left = main.removeFromLeft(leftW);
+    main.removeFromLeft(gap);
+    auto right = main.removeFromRight(rightW);
+    main.removeFromRight(gap);
+    auto center = main;
 
-    // Helper Lambda internal untuk penataan Knob & Label
     auto placeKnob = [this](int index, juce::Rectangle<int> area)
     {
-        if (knobs.size() > index && labels.size() > index)
-        {
-            labels[index]->setBounds(area.removeFromTop(14));
-            knobs[index]->setBounds(area);
-        }
+        const int labelH = 16;
+        labels[index]->setBounds(area.removeFromTop(labelH));
+        knobs[index]->setBounds(area.reduced(4, 0));
     };
 
-    // Helper Lambda internal untuk penataan Switch Button Group
-    auto placeButtonGroup = [this](int startIndex, int count, juce::Rectangle<int> area)
+    auto placeRow = [this](int start, int count, juce::Rectangle<int> area)
     {
-        if (count <= 0) return;
-        int btnWidth = area.getWidth() / count;
+        const int gapPx = 6;
+        const int totalGap = gapPx * (count - 1);
+        const int bw = juce::jmax(42, (area.getWidth() - totalGap) / count);
         for (int i = 0; i < count; ++i)
         {
-            if (buttons.size() > (startIndex + i))
-                buttons[startIndex + i]->setBounds(area.removeFromLeft(btnWidth).reduced(2, 1));
+            auto b = area.removeFromLeft(bw);
+            buttons[start + i]->setBounds(b);
+            if (i < count - 1)
+                area.removeFromLeft(gapPx);
         }
     };
 
-    // 3. MAIN PANELS (Left, Center, Right)
-    auto mainArea = bounds.reduced(10, 2);
-    int panelWidth = mainArea.getWidth() / 3;
+    // LEFT / SOFT CLIP
+    auto leftContent = left.reduced(14, 12);
+    leftContent.removeFromTop(144); // dedicated painted VU meter area
 
-    auto leftPanel   = mainArea.removeFromLeft(panelWidth).reduced(4);
-    auto rightPanel  = mainArea.removeFromRight(panelWidth).reduced(4);
-    auto centerPanel = mainArea.reduced(4);
+    auto row1 = leftContent.removeFromTop(92);
+    placeKnob(0, row1.removeFromLeft(row1.getWidth() / 2).reduced(2, 0));
+    placeKnob(1, row1.reduced(2, 0));
 
-    // --- LEFT PANEL: SOFT CLIP ---
-    leftPanel.removeFromTop(145); // Memaksimalkan space atas untuk VU Meter Besar
+    leftContent.removeFromTop(6);
+    auto row2 = leftContent.removeFromTop(92);
+    placeKnob(2, row2.removeFromLeft(row2.getWidth() / 2).reduced(2, 0));
+    placeKnob(3, row2.reduced(2, 0));
 
-    auto leftUpper = leftPanel.removeFromTop(85);
-    placeKnob(0, leftUpper.removeFromLeft(leftUpper.getWidth() / 2).reduced(2)); // INPUT
-    placeKnob(1, leftUpper.reduced(2));                                            // THRESHOLD
+    leftContent.removeFromTop(10);
+    placeRow(0, 3, leftContent.removeFromTop(31));
+    leftContent.removeFromTop(8);
+    placeRow(3, 4, leftContent.removeFromTop(31));
+    leftContent.removeFromTop(8);
+    placeRow(7, 3, leftContent.removeFromTop(31));
 
-    auto leftLower = leftPanel.removeFromTop(85);
-    placeKnob(2, leftLower.removeFromLeft(leftLower.getWidth() / 2).reduced(2)); // KNEE
-    placeKnob(3, leftLower.reduced(2));                                            // CLIP OUTPUT
+    // RIGHT / DRIVE
+    auto rightContent = right.reduced(14, 12);
+    rightContent.removeFromTop(144); // dedicated painted VU meter area
 
-    leftPanel.removeFromTop(6);
-    placeButtonGroup(0, 3, leftPanel.removeFromTop(26)); // CLIP STYLE Switch
-    leftPanel.removeFromTop(5);
-    placeButtonGroup(3, 4, leftPanel.removeFromTop(26)); // OVERSAMPLING Switch
-    leftPanel.removeFromTop(5);
-    placeButtonGroup(7, 3, leftPanel.removeFromTop(26)); // PROCESS MODE Switch
+    auto driveRow = rightContent.removeFromTop(92);
+    const int third = driveRow.getWidth() / 3;
+    placeKnob(4, driveRow.removeFromLeft(third).reduced(2, 0));
+    placeKnob(5, driveRow.removeFromLeft(third).reduced(2, 0));
+    placeKnob(6, driveRow.reduced(2, 0));
 
+    rightContent.removeFromTop(8);
+    placeRow(10, 3, rightContent.removeFromTop(31));
+    rightContent.removeFromTop(10);
 
-    // --- RIGHT PANEL: DRIVE ---
-    rightPanel.removeFromTop(145); // Memaksimalkan space atas untuk VU Meter Besar
+    auto mixRow = rightContent.removeFromTop(92);
+    placeKnob(7, mixRow.removeFromLeft(mixRow.getWidth() / 2).reduced(2, 0));
+    placeKnob(8, mixRow.reduced(2, 0));
 
-    auto rightTop = rightPanel.removeFromTop(80);
-    int topKnobW = rightTop.getWidth() / 3;
-    placeKnob(4, rightTop.removeFromLeft(topKnobW).reduced(2)); // DRIVE
-    placeKnob(5, rightTop.removeFromLeft(topKnobW).reduced(2)); // TONE
-    placeKnob(6, rightTop.reduced(2));                          // DRIVE OUTPUT
+    rightContent.removeFromTop(8);
+    auto filterRow = rightContent.removeFromTop(92);
+    placeKnob(9, filterRow.removeFromLeft(filterRow.getWidth() / 2).reduced(2, 0));
+    placeKnob(10, filterRow.reduced(2, 0));
 
-    rightPanel.removeFromTop(5);
-    placeButtonGroup(10, 3, rightPanel.removeFromTop(26)); // DRIVE MODE Switch (GROWL, ODD, TAPE)
-
-    rightPanel.removeFromTop(8);
-    auto rightMid = rightPanel.removeFromTop(80);
-    placeKnob(7, rightMid.removeFromLeft(rightMid.getWidth() / 2).reduced(2)); // MIX
-    placeKnob(8, rightMid.reduced(2));                                         // CHARACTER
-
-    auto rightFilters = rightPanel.removeFromTop(80);
-    placeKnob(9, rightFilters.removeFromLeft(rightFilters.getWidth() / 2).reduced(2)); // HPF
-    placeKnob(10, rightFilters.reduced(2));                                             // LPF
+    juce::ignoreUnused(w, h, center);
 }
