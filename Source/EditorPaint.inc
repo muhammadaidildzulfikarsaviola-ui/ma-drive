@@ -103,7 +103,6 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
     analog(rx + 8, 97, pw - 16, 130,
            p.rackPeaks[2].load(), p.rackPeaks[3].load(), 0.0f, false);
 
-    // Central monitor.
     auto display = juce::Rectangle<int>(cx, 94, cw, juce::jmax(300, h - 142));
     g.setColour(juce::Colours::black);
     g.fillRect(display);
@@ -116,8 +115,11 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
     const float threshold = juce::jlimit(-24.0f, 0.0f, p.thresholdForDisplay.load());
     const float thresholdT = juce::jlimit(0.0f, 1.0f, -threshold / 24.0f);
     const float thresholdY = display.getY() + display.getHeight() * thresholdT;
+    const float dashPattern[] = { 5.0f, 4.0f };
     g.setColour(juce::Colour(0xffff8a2a));
-    g.drawDashedLine({ (float)display.getX(), thresholdY, (float)display.getRight(), thresholdY }, { 5.0f, 4.0f }, 2, 0.0f);
+    g.drawDashedLine(juce::Line<float>((float)display.getX(), thresholdY,
+                                       (float)display.getRight(), thresholdY),
+                     dashPattern, 2, 0.0f);
     g.setFont(juce::FontOptions(10.0f));
     g.drawText("THRESHOLD " + juce::String(threshold, 1) + " dB",
                display.getX() + 7, (int)thresholdY - 15, 145, 14, juce::Justification::left);
