@@ -1,27 +1,41 @@
 #pragma once
 #include "PluginProcessor.h"
+
 class MaDriveHardwareLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-    void drawRotarySlider(juce::Graphics& g,int x,int y,int width,int height,float sliderPosProportional,float rotaryStartAngle,float rotaryEndAngle,juce::Slider& slider) override
+    void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+                          float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle,
+                          juce::Slider& slider) override
     {
-        auto bounds=juce::Rectangle<float>((float)x,(float)y,(float)width,(float)height).reduced(5.0f);
-        auto c=bounds.getCentre();
-        float r=juce::jmin(bounds.getWidth(),bounds.getHeight())*0.5f;
-        g.setColour(juce::Colour(0x45000000)); g.fillEllipse(bounds.translated(3.0f,4.0f));
-        g.setColour(juce::Colour(0xff171919)); g.fillEllipse(bounds);
-        g.setColour(juce::Colour(0xff5a5d5d)); g.drawEllipse(bounds,2.0f);
-        auto ring=bounds.reduced(r*0.08f); g.setColour(juce::Colour(0xff2c2f30)); g.fillEllipse(ring); g.setColour(juce::Colour(0xff747777)); g.drawEllipse(ring,1.2f);
-        auto face=bounds.reduced(r*0.19f); g.setColour(juce::Colour(0xff101213)); g.fillEllipse(face); g.setColour(juce::Colour(0xff424546)); g.drawEllipse(face,1.0f);
-        for(int i=0;i<28;++i){float a=juce::MathConstants<float>::twoPi*(float)i/28.0f;float ri=r*0.79f,ro=r*0.90f;g.setColour(i%4==0?juce::Colour(0xff9a9a97):juce::Colour(0xff555859));g.drawLine(c.x+std::cos(a)*ri,c.y+std::sin(a)*ri,c.x+std::cos(a)*ro,c.y+std::sin(a)*ro,i%4==0?1.5f:0.8f);}
-        float a=rotaryStartAngle+sliderPosProportional*(rotaryEndAngle-rotaryStartAngle);
-        float px=c.x+std::cos(a)*(r*0.67f),py=c.y+std::sin(a)*(r*0.67f);
-        g.setColour(juce::Colour(0xffffa13a)); g.drawLine(c.x,c.y,px,py,2.6f);
-        g.setColour(juce::Colour(0xffefefec)); g.fillEllipse(c.x-3,c.y-3,6,6);
-        g.setColour(juce::Colour(0xffffa13a)); g.fillEllipse(c.x-1,c.y-1,2,2);
         juce::ignoreUnused(slider);
+        auto bounds = juce::Rectangle<float>((float)x, (float)y, (float)width, (float)height).reduced(5.0f);
+        auto centre = bounds.getCentre();
+        const float radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.5f;
+        g.setColour(juce::Colour(0x55000000)); g.fillEllipse(bounds.translated(3.0f, 4.0f));
+        g.setColour(juce::Colour(0xff171919)); g.fillEllipse(bounds);
+        g.setColour(juce::Colour(0xff626565)); g.drawEllipse(bounds, 1.6f);
+        auto inner = bounds.reduced(radius * 0.10f);
+        g.setColour(juce::Colour(0xff2c2f30)); g.fillEllipse(inner);
+        g.setColour(juce::Colour(0xff777979)); g.drawEllipse(inner, 1.0f);
+        for (int i = 0; i < 28; ++i)
+        {
+            const float a = juce::MathConstants<float>::twoPi * (float)i / 28.0f;
+            const float ri = radius * 0.76f, ro = radius * 0.88f;
+            g.setColour(i % 4 == 0 ? juce::Colour(0xffa5a5a0) : juce::Colour(0xff565959));
+            g.drawLine(centre.x + std::cos(a) * ri, centre.y + std::sin(a) * ri,
+                       centre.x + std::cos(a) * ro, centre.y + std::sin(a) * ro,
+                       i % 4 == 0 ? 1.4f : 0.75f);
+        }
+        const float angle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+        const float px = centre.x + std::cos(angle) * radius * 0.67f;
+        const float py = centre.y + std::sin(angle) * radius * 0.67f;
+        g.setColour(juce::Colour(0xffff9b35)); g.drawLine(centre.x, centre.y, px, py, 2.6f);
+        g.setColour(juce::Colour(0xffeeeeea)); g.fillEllipse(centre.x - 3.0f, centre.y - 3.0f, 6.0f, 6.0f);
+        g.setColour(juce::Colour(0xffff9b35)); g.fillEllipse(centre.x - 1.0f, centre.y - 1.0f, 2.0f, 2.0f);
     }
 };
+
 class MaDriveAudioProcessorEditor final : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
@@ -29,6 +43,7 @@ public:
     ~MaDriveAudioProcessorEditor() override;
     void paint(juce::Graphics&) override;
     void resized() override;
+
 private:
     void timerCallback() override { repaint(); }
     MaDriveAudioProcessor& p;
@@ -38,6 +53,6 @@ private:
     juce::OwnedArray<juce::TextButton> buttons;
     std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>> attachments;
     std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>> buttonAttachments;
-    bool activeB=false;
+    bool activeB = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MaDriveAudioProcessorEditor)
 };
