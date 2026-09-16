@@ -2,18 +2,18 @@ void MaDriveAudioProcessorEditor::resized()
 {
     const int w = getWidth();
     const int h = getHeight();
-    const int pw = juce::jlimit(215, 245, w / 4);
-    const int lx = 28;
-    const int rx = w - pw - 28;
-    const int knob = juce::jlimit(70, 82, pw / 3);
+    const int sideW = juce::jlimit(230, 250, w / 4);
+    const int leftX = 28;
+    const int rightX = w - sideW - 28;
+    const int knob = juce::jlimit(62, 68, (sideW - 18) / 3);
 
     auto K = [this, knob](int i, int x, int y)
     {
-        knobs[i]->setBounds(x, y, knob, knob + 20);
+        knobs[i]->setBounds(x, y, knob, knob + 18);
         labels[i]->setBounds(x - 4, y + knob + 15, knob + 8, 16);
     };
 
-    auto B = [this](int first, int count, int x, int y, int width, int height = 27)
+    auto B = [this](int first, int count, int x, int y, int width, int height = 28)
     {
         const int gap = 4;
         const int bw = (width - gap * (count - 1)) / count;
@@ -21,29 +21,39 @@ void MaDriveAudioProcessorEditor::resized()
             buttons[first + i]->setBounds(x + i * (bw + gap), y, bw, height);
     };
 
-    buttons[14]->setBounds(lx + 14, 82, 55, 29);
-    buttons[15]->setBounds(lx + 73, 82, 55, 29);
+    // A/B: top-left, separated from the meter.
+    buttons[14]->setBounds(leftX + 4, 92, 54, 30);
+    buttons[15]->setBounds(leftX + 62, 92, 54, 30);
 
-    // LEFT: Soft Clip
-    K(0, lx + 2, 225);
-    K(1, lx + pw / 2 + 2, 225);
-    K(2, lx + 2, 315);
-    K(3, lx + pw / 2 + 2, 315);
-    B(0, 3, lx, 405, pw, 26);
-    B(3, 4, lx, 436, pw, 26);
-    B(7, 3, lx, 467, pw, 26);
+    // LEFT: Soft Clip, two rows.
+    K(0, leftX + 2, 240);
+    K(1, leftX + sideW / 2 + 1, 240);
+    K(2, leftX + 2, 340);
+    K(3, leftX + sideW / 2 + 1, 340);
 
-    // RIGHT: Drive
-    K(4, rx + 1, 225);
-    K(5, rx + pw / 2 - knob / 2, 225);
-    K(6, rx + pw - knob - 1, 225);
-    B(10, 3, rx, 320, pw, 27);
-    K(7, rx + 1, 350);
-    K(8, rx + pw / 2 - knob / 2, 350);
-    K(9, rx + pw - knob - 1, 350);
-    K(10, rx + 1, 420);
-    K(11, rx + pw / 2 - knob / 2, 420);
+    B(0, 3, leftX, 438, sideW, 27);
+    B(3, 4, leftX, 471, sideW, 27);
+    B(7, 3, leftX, 504, sideW, 27);
 
-    buttons[13]->setBounds(w - 105, h - 33, 88, 27);
-    buttons[16]->setBounds(w / 2 - 70, h - 33, 140, 27);
+    // RIGHT: Drive.
+    const int c1 = rightX + 1;
+    const int c2 = rightX + sideW / 3;
+    const int c3 = rightX + (sideW * 2) / 3 - 2;
+
+    K(4, c1, 240);
+    K(5, c2, 240);
+    K(6, c3, 240);
+
+    B(10, 3, rightX, 340, sideW, 27);
+
+    K(7, c1, 380);
+    K(8, c2, 380);
+    K(9, c3, 380);
+
+    K(10, c1, 480);
+    K(11, c2, 480);
+
+    // Bottom utilities.
+    buttons[16]->setBounds(w / 2 - 88, h - 36, 176, 28);
+    buttons[13]->setBounds(w - 118, h - 36, 98, 28);
 }
