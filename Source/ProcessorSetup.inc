@@ -11,7 +11,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaDriveAudioProcessor::makeL
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> p;
     p.emplace_back(F(-24.0f,24.0f,0.0f,"input","Input"));
     p.emplace_back(F(-24.0f,0.0f,-8.0f,"threshold","Threshold"));
-    p.emplace_back(F(0.0f,12.0f,0.0f,"knee","Knee"));
+    p.emplace_back(F(-12.0f,12.0f,0.0f,"knee","Knee"));
     p.emplace_back(F(-24.0f,24.0f,0.0f,"clipOutput","Clip Output"));
     p.push_back(std::make_unique<juce::AudioParameterChoice>("clipStyle","Clip Style",juce::StringArray{"Soft","Medium","Hard"},0));
     p.push_back(std::make_unique<juce::AudioParameterChoice>("oversampling","Oversampling",juce::StringArray{"1x","2x","4x","8x"},1));
@@ -22,7 +22,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MaDriveAudioProcessor::makeL
     p.emplace_back(F(0.0f,100.0f,100.0f,"mix","Mix"));
     p.emplace_back(F(0.0f,100.0f,35.0f,"character","Character"));
     p.emplace_back(F(0.0f,500.0f,40.0f,"hpf","HPF"));
-    p.emplace_back(F(0.0f,20000.0f,18000.0f,"lpf","LPF"));
+    p.emplace_back(F(0.0f,20000.0f,0.0f,"lpf","LPF"));
     p.push_back(std::make_unique<juce::AudioParameterChoice>("driveMode","Drive Mode",juce::StringArray{"Growl","Odd","Tape"},0));
     p.emplace_back(F(-12.0f,12.0f,0.0f,"trim","Trim"));
     p.push_back(std::make_unique<juce::AudioParameterBool>("bypass","Bypass",false));
