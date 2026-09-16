@@ -5,63 +5,50 @@ MaDriveAudioProcessorEditor::MaDriveAudioProcessorEditor(MaDriveAudioProcessor& 
 
     const char* ids[] = { "input", "threshold", "knee", "clipOutput", "drive", "tone", "driveOutput", "mix", "character", "hpf", "lpf", "trim" };
     const char* names[] = { "INPUT", "THRESHOLD", "KNEE", "OUTPUT", "DRIVE", "TONE", "OUTPUT", "MIX", "CHARACTER", "HPF", "LPF", "TRIM" };
-    const float pi = juce::MathConstants<float>::pi;
 
     for (int i = 0; i < 12; ++i)
     {
         auto* s = knobs.add(new juce::Slider(juce::Slider::RotaryHorizontalVerticalDrag,
                                               juce::Slider::TextBoxBelow));
         s->setLookAndFeel(&hardwareLookAndFeel);
-        s->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 92, 20);
+        s->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 76, 18);
         s->setColour(juce::Slider::textBoxTextColourId, juce::Colours::white);
         s->setColour(juce::Slider::textBoxBackgroundColourId, juce::Colour(0xff45433f));
         s->setColour(juce::Slider::textBoxOutlineColourId, juce::Colour(0xff77736b));
         s->setNumDecimalPlacesToDisplay((i == 7 || i == 8) ? 0 : 2);
 
-        float start = pi * 1.25f;
-        float end = pi * 2.75f;
+        float start = juce::MathConstants<float>::pi * 0.75f;
+        float end   = juce::MathConstants<float>::pi * 2.25f;
 
-        // Bipolar controls: 0 dB sits at 12 o'clock.
-        if (i == 0 || i == 2 || i == 3 || i == 6 || i == 11)
+        // Bipolar controls: minimum around 7:30, 0 at 12, maximum around 4:30.
+        if (i == 0 || i == 2 || i == 3 || i == 6 || i == 11 || i == 5)
         {
-            start = pi * 1.25f;
-            end = pi * 2.75f;
+            start = juce::MathConstants<float>::pi * 0.75f;
+            end   = juce::MathConstants<float>::pi * 2.25f;
         }
-        // Threshold: minimum at ~7 o'clock, 0 dB at ~5 o'clock.
+        // Threshold: minimum around 7:30, 0 dB at 5 o'clock.
         else if (i == 1)
         {
-            start = pi * 1.1666667f;
-            end = pi * 2.8333333f;
+            start = juce::MathConstants<float>::pi * 0.75f;
+            end   = juce::MathConstants<float>::pi * 2.3333333f;
         }
-        // Drive: 0 at ~7 o'clock, maximum at ~5 o'clock.
-        else if (i == 4)
+        // Drive / Mix / Character: 0 at 7 o'clock, maximum at 5 o'clock.
+        else if (i == 4 || i == 7 || i == 8)
         {
-            start = pi * 1.1666667f;
-            end = pi * 2.8333333f;
+            start = juce::MathConstants<float>::pi * 0.6666667f;
+            end   = juce::MathConstants<float>::pi * 2.3333333f;
         }
-        // Tone: 0.5 is the physical centre.
-        else if (i == 5)
-        {
-            start = pi * 1.25f;
-            end = pi * 2.75f;
-        }
-        // Mix / Character: 0 at ~7, 100 at ~5.
-        else if (i == 7 || i == 8)
-        {
-            start = pi * 1.1666667f;
-            end = pi * 2.8333333f;
-        }
-        // HPF: OFF at ~7, increasing frequency toward ~5.
+        // HPF: OFF at 7 o'clock, increasing frequency clockwise toward 5 o'clock.
         else if (i == 9)
         {
-            start = pi * 1.1666667f;
-            end = pi * 2.8333333f;
+            start = juce::MathConstants<float>::pi * 0.6666667f;
+            end   = juce::MathConstants<float>::pi * 2.3333333f;
         }
-        // LPF: OFF at ~5:30, 20 kHz starts at ~5 and moves counter-clockwise.
+        // LPF: OFF at 5:30, 20 kHz at 5 o'clock, sweep counter-clockwise.
         else if (i == 10)
         {
-            start = pi * 1.8333333f;
-            end = pi * 1.6666667f;
+            start = juce::MathConstants<float>::pi * 0.4166667f;
+            end   = juce::MathConstants<float>::pi * 0.25f;
         }
 
         s->setRotaryParameters(start, end, true);
