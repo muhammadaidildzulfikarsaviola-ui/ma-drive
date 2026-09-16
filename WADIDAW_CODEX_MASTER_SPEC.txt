@@ -1,0 +1,846 @@
+WADIDAW — SATURATION / CLIPPER
+MASTER PROJECT SPECIFICATION FOR CODEX
+=======================================
+
+PROJECT GOAL
+------------
+Build the WADIDAW Saturation / Clipper plugin end-to-end as a real, functional VST3 audio plugin.
+
+The plugin is an audio effect focused on:
+1. Soft clipping / clipping control
+2. Harmonic drive / saturation
+3. Anti-aliasing through oversampling
+4. Professional real-time metering and visualization
+5. A rugged vintage/industrial studio-rack interface
+
+IMPORTANT:
+This document is the engineering source of truth.
+A visual reference image will also be provided to Codex. Use the image as the UI/visual reference, but do NOT replace real DSP or functionality with fake/static UI behavior.
+
+The final product must be a real usable plugin, not a mockup.
+
+
+BRAND
+-----
+Company / Developer:
+WADIDAW
+
+Plugin:
+WADIDAW — SATURATION / CLIPPER
+
+Do NOT use the old "PEJU AUDIO" branding.
+Do NOT invent a fake company logo.
+Keep branding minimal and consistent with the approved visual reference.
+
+
+VISUAL REFERENCE
+----------------
+The user will provide one or more images to Codex as visual references.
+
+Use those images for:
+- Overall layout
+- Panel arrangement
+- Industrial/rugged rack aesthetic
+- Meter appearance
+- Knob placement
+- Switch style
+- Typography hierarchy
+- Color/material direction
+- Spacing and proportions
+- General visual character
+
+Do NOT blindly copy pixels.
+Recreate the design in the project's existing UI framework using clean, maintainable code.
+
+The approved layout concept is:
+
+LEFT   = SOFT CLIP
+CENTER = MONITORING
+RIGHT  = DRIVE
+BOTTOM = GLOBAL
+TOP    = A/B + PRESET
+
+
+PRODUCT STRUCTURE
+-----------------
+Top:
+- A/B
+- Preset controls
+- Preset navigation / loading
+
+Left:
+SOFT CLIP section
+
+Center:
+MONITORING section
+
+Right:
+DRIVE section
+
+Bottom:
+GLOBAL section
+
+
+DEVELOPMENT ORDER
+-----------------
+Implement the entire project end-to-end in this order:
+
+Phase 1:
+VST3 foundation, parameter system, audio-processing skeleton, UI skeleton.
+
+Phase 2:
+Soft Clip engine, Gain, Threshold, Knee, Output, clip styles, gain reduction, threshold visualization.
+
+Phase 3:
+Drive framework, Growl, Odd, Tape, HPF/LPF, Mix, Character.
+
+Phase 4:
+2x / 4x / 8x oversampling and anti-alias filtering.
+
+Phase 5:
+Meters, waveform, threshold line, gain-reduction waveform, spectrum, transfer curve.
+
+Phase 6:
+Approved WADIDAW UI, switches, knobs, A/B, presets, bypass, Trim, Support Me.
+
+Phase 7:
+Testing:
+- Sample rates
+- Mono/stereo
+- M/S
+- Multi-band
+- Automation
+- Presets
+- CPU usage
+- Aliasing
+- Level matching
+- Stability
+
+Phase 8:
+Cubase testing, release build, packaging/installer, Git commit and release.
+
+
+PHASE 1 — VST3 FOUNDATION
+-------------------------
+Before changing architecture:
+
+1. Inspect the entire repository.
+2. Identify:
+   - Framework
+   - Compiler/toolchain
+   - Existing DSP code
+   - Existing UI code
+   - Build system
+   - Dependencies
+   - Plugin format support
+   - Existing tests
+   - Existing assets
+3. Preserve useful existing work.
+4. Do not unnecessarily rewrite working infrastructure.
+5. Determine the cleanest architecture for a production VST3 plugin.
+
+Create / maintain:
+- Plugin processor
+- Plugin editor
+- Parameter system
+- State serialization
+- Audio processing pipeline
+- UI-to-DSP parameter binding
+- Build configuration
+
+Parameter IDs must be stable.
+Preset/state compatibility should be considered from the beginning.
+
+
+PHASE 2 — SOFT CLIP ENGINE
+--------------------------
+Implement a REAL soft clipper.
+
+Parameters:
+
+INPUT / GAIN
+- Input / Gain
+
+THRESHOLD
+- Threshold
+
+KNEE
+- Knee
+
+OUTPUT
+- Output
+
+CLIP STYLE
+- Soft
+- Medium
+- Hard
+
+OVERSAMPLING
+- 1x
+- 2x
+- 4x
+- 8x
+
+PROCESS MODE
+- Stereo
+- M/S
+- Multi Band
+
+The DSP must actually respond to every parameter.
+
+Do not make parameters decorative.
+
+The soft clip engine should provide:
+- Predictable gain staging
+- Smooth parameter transitions where appropriate
+- Proper clipping behavior
+- Useful gain reduction
+- No NaN / Inf generation
+- Stable behavior at extreme parameter values
+
+
+GAIN REDUCTION
+--------------
+Implement real gain-reduction measurement.
+
+The GR value must reflect the actual DSP processing.
+
+Use smoothing where necessary so visual meters do not jitter uncontrollably.
+
+The GR visualization must be driven by real audio-processing data.
+
+
+THRESHOLD VISUALIZATION
+-----------------------
+The center monitoring area must display a dynamic threshold line.
+
+The threshold line must move when the actual Threshold parameter changes.
+
+Do NOT hard-code a static threshold line.
+
+The visualization should clearly distinguish:
+- Input
+- Output
+- Threshold
+- Gain reduction
+
+
+PHASE 3 — DRIVE ENGINE
+----------------------
+Implement a modular drive/saturation framework.
+
+Drive parameters:
+
+- Drive
+- Tone
+- Output
+- Mix
+- Character
+- HPF
+- LPF
+
+Drive modes:
+
+GROWL
+"Thick, dense, aggressive. Adds harmonic weight."
+
+ODD
+"Edgy, forward. More odd harmonics."
+
+TAPE
+"Warm, smooth. Natural compression."
+
+IMPORTANT:
+Mode names must remain generic.
+Do NOT name modes after specific instruments such as:
+- Bass mode
+- Drum mode
+- Vocal mode
+etc.
+
+The mode names are:
+GROWL
+ODD
+TAPE
+
+
+DRIVE METER
+-----------
+The Drive VU meter must show:
+
+- Input
+- Output
+
+IMPORTANT:
+DO NOT put a Threshold needle or Threshold indication on the Drive meter.
+
+The Drive meter is for level monitoring only.
+
+
+DRIVE DSP
+---------
+The three drive modes must sound meaningfully different.
+
+GROWL:
+- Dense harmonic saturation
+- Stronger harmonic weight
+- Aggressive character
+
+ODD:
+- More pronounced odd harmonics
+- Edgier / more forward distortion character
+
+TAPE:
+- Smoother saturation
+- Warmth
+- Mild compression / softening behavior
+
+The implementation can use appropriate waveshaping, nonlinear processing, filtering, saturation stages, or other DSP techniques.
+
+Avoid simply changing gain and calling it three different modes.
+
+Mix must provide real dry/wet blending.
+
+Character must alter the tonal / nonlinear character in a meaningful way.
+
+HPF and LPF must be real filters in the drive path.
+
+
+PHASE 4 — OVERSAMPLING
+----------------------
+Implement:
+
+- 1x
+- 2x
+- 4x
+- 8x
+
+Oversampling must be real.
+
+Use appropriate anti-alias filtering.
+
+Nonlinear processing should occur at the oversampled rate when required.
+
+The implementation must consider:
+- CPU cost
+- Latency
+- Filter quality
+- Aliasing reduction
+- Real-time safety
+
+Do not implement fake oversampling that merely changes a label.
+
+
+PHASE 5 — MONITORING
+--------------------
+Implement real-time monitoring.
+
+Views / tabs:
+
+- Waveform
+- Spectrum
+- Transfer
+
+WAVEFORM:
+Display:
+- Input waveform
+- Output waveform
+- Dynamic threshold line
+- Gain reduction waveform / area
+
+Input can use a clear neutral/light visual.
+Output can use the approved warm/red visual direction from the reference.
+Threshold should be visually distinct.
+
+GAIN REDUCTION WAVEFORM:
+Must represent actual real-time GR behavior.
+
+SPECTRUM:
+Provide a useful real-time spectrum display.
+
+TRANSFER:
+Provide a transfer curve that represents the nonlinear processing behavior.
+
+Do not create fake graphs that are disconnected from DSP.
+
+
+LEVEL METERS
+------------
+Implement:
+
+Input L/R
+Output L/R
+
+Meters should respond to actual audio.
+
+Use appropriate peak / RMS / VU measurements depending on the visual design.
+
+Avoid excessive CPU usage.
+
+Meter updates should be decoupled from the audio thread where appropriate.
+
+
+PHASE 6 — UI IMPLEMENTATION
+---------------------------
+Recreate the approved WADIDAW industrial rack interface from the provided image reference.
+
+General visual direction:
+- Rugged vintage studio hardware
+- Brushed / weathered metal
+- Dark central monitoring area
+- Warm amber / orange accents
+- Analog VU meters
+- Digital meters
+- Physical-hardware style switches
+- Large readable knobs
+- Compact but professional spacing
+
+Avoid:
+- Generic modern AI-looking UI
+- Excessive gradients
+- Glassmorphism
+- Generic dashboard cards
+- Fake 3D UI
+- Excessive decorative text
+- Random logos
+- Unnecessary visual clutter
+
+The interface should feel like a real piece of audio hardware.
+
+
+SOFT CLIP UI
+------------
+Include:
+
+VU meter
+- Input
+- Output
+- Threshold indication where appropriate for the Soft Clip section
+
+Knobs:
+- Input / Gain
+- Threshold
+- Knee
+- Output
+
+Clip Style:
+- Soft
+- Medium
+- Hard
+
+Oversampling:
+- 1x
+- 2x
+- 4x
+- 8x
+
+Process Mode:
+- Stereo
+- M/S
+- Multi Band
+
+
+CENTER MONITORING UI
+--------------------
+Include:
+
+Tabs:
+- Waveform
+- Spectrum
+- Transfer
+
+Waveform view:
+- Input
+- Output
+- Dynamic Threshold
+- Gain Reduction waveform / area
+
+Also show:
+- Input L/R meters
+- Output L/R meters
+- Useful numerical level / GR information where appropriate
+
+
+DRIVE UI
+--------
+Include:
+
+Drive VU meter:
+- Input
+- Output
+- NO threshold needle
+
+Knobs:
+- Drive
+- Tone
+- Output
+- Mix
+- Character
+
+Hardware-style Drive Mode switch:
+- GROWL
+- ODD
+- TAPE
+
+Show the short explanation for the selected mode if space/design allows.
+
+Drive filters:
+- HPF
+- LPF
+
+Do not turn the mode selector into generic software cards.
+It should look like a physical hardware switch/control.
+
+
+GLOBAL UI
+---------
+Bottom section:
+
+- WADIDAW branding
+- Support Me button
+- Bypass
+- Trim knob
+
+TRIM:
+- Range: -12 dB to +12 dB
+- Intended for final output/gain balance and level matching
+- Must actually affect the output level
+
+SUPPORT ME:
+- Must open the intended website/link.
+- Keep the control visually subtle and consistent with the hardware aesthetic.
+
+
+A/B
+---
+Implement A/B comparison.
+
+Requirements:
+- A state
+- B state
+- Switch between A and B
+- Store relevant plugin parameters
+- Smooth switching where practical
+- Do not cause clicks or crashes
+
+A/B should interact correctly with automation/state handling.
+
+
+PRESETS
+-------
+Implement preset functionality appropriate to the framework.
+
+At minimum:
+- Load preset
+- Navigate presets if supported
+- Save/restore plugin state
+
+Preset data must include all user-adjustable parameters.
+
+Do not hard-code preset names without implementing the underlying state system.
+
+
+BYPASS
+------
+Implement real bypass.
+
+Bypass must bypass processing correctly.
+
+Avoid clicks/pops when switching bypass if possible.
+
+
+DSP / REAL-TIME SAFETY
+----------------------
+Audio processing must be suitable for real-time use.
+
+Do NOT:
+- Allocate memory in the audio callback
+- Perform blocking operations in the audio callback
+- Perform filesystem access in the audio callback
+- Perform UI operations in the audio callback
+- Perform expensive dynamic work unnecessarily
+
+Use safe parameter communication between UI and DSP.
+
+Preallocate buffers where possible.
+
+Keep meter/history communication thread-safe.
+
+
+MULTI MODE DETAILS
+------------------
+STEREO:
+Process normal L/R stereo signal.
+
+M/S:
+Process Mid/Side appropriately.
+Convert L/R -> M/S.
+Process.
+Convert M/S -> L/R.
+
+MULTI BAND:
+Implement a sensible multi-band processing architecture.
+
+If a complete multi-band implementation is too invasive for the existing architecture, first establish a clean extensible architecture and implement a stable minimum viable multi-band mode rather than faking the feature.
+
+No fake controls.
+
+
+QUALITY REQUIREMENTS
+--------------------
+The plugin should prioritize sound quality over visual complexity.
+
+Pay attention to:
+- Aliasing
+- DC offset
+- Clipping behavior
+- Overshoot
+- Filter stability
+- Parameter smoothing
+- Stereo integrity
+- M/S reconstruction
+- Gain compensation
+- Dry/wet phase consistency
+- Output level matching
+
+
+TESTING REQUIREMENTS
+--------------------
+Test at multiple sample rates, including typical rates such as:
+- 44.1 kHz
+- 48 kHz
+- 88.2 kHz
+- 96 kHz
+
+Test:
+- Mono
+- Stereo
+- M/S
+- Multi Band
+- Automation
+- Preset save/load
+- A/B
+- Bypass
+- Extreme parameter values
+- Rapid parameter changes
+- Silence
+- Very loud signals
+- Short transients
+- Long sustained signals
+
+Check:
+- No crash
+- No NaN
+- No Inf
+- No denormal problems
+- No unexpected DC buildup
+- No severe zipper noise
+- No broken state restoration
+
+
+ALIASING TEST
+-------------
+Compare nonlinear processing at:
+- 1x
+- 2x
+- 4x
+- 8x
+
+Confirm that higher oversampling actually reduces unwanted high-frequency alias components.
+
+Do not claim this is solved merely because an oversampling class exists.
+
+
+CPU / PERFORMANCE
+-----------------
+Keep CPU usage reasonable.
+
+Avoid unnecessary redraws.
+
+Do not redraw large visualizations at audio rate.
+
+Separate:
+- Audio processing rate
+- Meter update rate
+- UI repaint rate
+
+Target a responsive UI without wasting CPU.
+
+
+VISUAL BEHAVIOR
+---------------
+Meters, waveform, spectrum, transfer curve, threshold line, and GR visualization must be driven by actual DSP data.
+
+No static demo animations.
+
+No fake waveform.
+
+No fake gain reduction.
+
+No fake spectrum.
+
+No fake transfer curve.
+
+No fake threshold behavior.
+
+
+BUILD / RELEASE
+---------------
+After implementation:
+
+1. Build the plugin.
+2. Fix compiler errors.
+3. Fix linker errors.
+4. Run tests.
+5. Verify the VST3 output.
+6. Verify plugin metadata.
+7. Verify state handling.
+8. Verify the UI loads.
+9. Verify audio passes correctly.
+10. Verify processing actually changes the signal.
+11. Package release artifacts.
+12. Prepare installer if the existing project supports it.
+13. Keep build artifacts organized.
+
+
+CUBASE VALIDATION
+-----------------
+The final VST3 should be tested in a real DAW environment, especially Cubase if available.
+
+Verify:
+- Plugin discovery
+- Plugin loading
+- Stereo operation
+- Automation
+- Preset/state recall
+- Bypass
+- A/B
+- UI resizing if supported
+- No crash during repeated loading/unloading
+- No audio dropouts caused by the plugin
+
+
+CODE QUALITY
+------------
+Write maintainable production-oriented code.
+
+Prefer:
+- Clear class responsibilities
+- Stable interfaces
+- Descriptive names
+- Small reusable DSP components
+- Centralized parameter definitions
+- Minimal duplication
+- Comments only where they explain non-obvious DSP decisions
+
+Avoid:
+- Giant monolithic classes
+- Hard-coded UI values everywhere
+- Magic numbers without explanation
+- Dead code
+- Placeholder TODOs pretending to be finished functionality
+- Fake implementations
+
+
+WORKFLOW FOR CODEX
+------------------
+Before implementation:
+
+1. Inspect the repository.
+2. Understand the existing architecture.
+3. Identify risks.
+4. Create an implementation plan.
+5. Then implement the entire project end-to-end.
+
+Do NOT stop after Phase 1, Phase 2, etc. unless a blocking technical issue genuinely requires user input.
+
+When a technical choice is necessary, choose the most robust reasonable solution that fits the existing project.
+
+Build and test continuously.
+
+When something fails:
+- Diagnose the root cause.
+- Fix it.
+- Rebuild.
+- Retest.
+
+Do not simply report errors without attempting to resolve them.
+
+
+IMPORTANT UI REFERENCE RULE
+---------------------------
+The user will provide an image of the approved WADIDAW UI.
+
+Treat the image as the visual source of truth for:
+- Layout
+- Overall look
+- Control placement
+- Meter style
+- Industrial hardware character
+
+Treat this TXT specification as the functional source of truth.
+
+If the image and TXT appear to conflict:
+- Use the TXT for functional behavior.
+- Use the image for visual design.
+- Do not remove a required functional feature just because it is not visually obvious in the reference.
+
+
+DEFINITION OF DONE
+------------------
+The project is considered complete only when:
+
+[ ] VST3 builds successfully
+[ ] Plugin loads successfully
+[ ] Audio processing works
+[ ] Soft Clip works
+[ ] Drive works
+[ ] GROWL works
+[ ] ODD works
+[ ] TAPE works
+[ ] HPF works
+[ ] LPF works
+[ ] Mix works
+[ ] Character works
+[ ] Input/Output controls work
+[ ] Threshold works
+[ ] Knee works
+[ ] Clip Style works
+[ ] Oversampling 1x/2x/4x/8x works
+[ ] Stereo works
+[ ] M/S works
+[ ] Multi Band works or has a stable implemented MVP
+[ ] Gain reduction is real
+[ ] Threshold visualization is dynamic
+[ ] Input meters are real
+[ ] Output meters are real
+[ ] Waveform is real
+[ ] GR waveform is real
+[ ] Spectrum is real
+[ ] Transfer curve is real
+[ ] Drive meter has NO threshold needle
+[ ] A/B works
+[ ] Presets/state save-load works
+[ ] Bypass works
+[ ] Trim works from -12 dB to +12 dB
+[ ] Support Me works
+[ ] No fake/static DSP visualization
+[ ] No audio-thread allocations
+[ ] No obvious crashes
+[ ] No NaN/Inf problems
+[ ] Multiple sample rates tested
+[ ] Build/release artifacts generated
+[ ] Final plugin is ready for manual Cubase testing
+
+
+FINAL INSTRUCTION
+-----------------
+Do the engineering work, not just the UI mockup.
+
+The goal is a functional, stable, real-time VST3 saturation/clipper plugin with the approved WADIDAW industrial hardware aesthetic.
+
+The user will handle final subjective sound-design and visual polishing after the functional implementation is complete.
+
+Do not optimize prematurely for pixel-perfect polish before the DSP and plugin architecture are stable.
+
+Finish the entire implementation as far as the repository and available tooling allow, document any genuinely remaining manual steps, and provide evidence of builds/tests rather than claiming success without verification.
