@@ -1,6 +1,8 @@
 # Build
 build/
 Build/
+build-*/
+external/JUCE/
 cmake-build-*/
 out/
 
