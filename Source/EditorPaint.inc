@@ -2,171 +2,185 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
 {
     const int w = getWidth();
     const int h = getHeight();
-    const int pw = juce::jlimit(215, 245, w / 4);
+    const int pw = juce::jlimit(230, 245, w / 4);
     const int lx = 28;
     const int rx = w - pw - 28;
     const int cx = lx + pw + 18;
     const int cw = juce::jmax(260, rx - cx - 18);
+    const int footerY = h - 78;
 
+    // Industrial metal base.
     g.fillAll(juce::Colour(0xff777168));
+    auto outer = getLocalBounds().reduced(10);
+    g.setColour(juce::Colour(0xff171818));
+    g.fillRoundedRectangle(outer.toFloat(), 12.0f);
+    g.setColour(juce::Colour(0xffaaa49a));
+    g.fillRoundedRectangle(outer.reduced(8).toFloat(), 8.0f);
 
-    auto frame = getLocalBounds().reduced(12);
-    g.setColour(juce::Colour(0xff121313));
-    g.fillRoundedRectangle(frame.toFloat(), 12.0f);
-    g.setColour(juce::Colour(0xff807a70));
-    g.fillRoundedRectangle(frame.reduced(10).toFloat(), 8.0f);
-
-    g.setColour(juce::Colours::white);
-    g.setFont(juce::FontOptions(30.0f).withStyle("Bold"));
-    g.drawText("Ma Drive", 0, 13, w, 38, juce::Justification::centred);
-    g.setFont(juce::FontOptions(11.0f));
-    g.drawText("WADIDAW / SATURATION / CLIPPER", 0, 48, w, 18, juce::Justification::centred);
-
-    g.setFont(juce::FontOptions(12.0f).withStyle("Bold"));
-    g.drawText("SOFT CLIP", lx, 74, pw, 18, juce::Justification::centred);
-    g.drawText("DRIVE", rx, 74, pw, 18, juce::Justification::centred);
-
-    // One dedicated Gain Reduction VU meter. The needles change with process mode.
-    const int meterW = juce::jmax(210, cw - 8);
-    const int meterH = 118;
-    const int meterX = cx + (cw - meterW) / 2;
-    const int meterY = 70;
+    // Header.
+    g.setColour(juce::Colour(0xff1a1a19));
+    g.fillRoundedRectangle(22.0f, 10.0f, (float)w - 44.0f, 110.0f, 8.0f);
+    g.setColour(juce::Colour(0xffc4beb2));
+    g.fillRoundedRectangle(28.0f, 16.0f, (float)w - 56.0f, 98.0f, 6.0f);
 
     g.setColour(juce::Colour(0xff111212));
-    g.fillRoundedRectangle((float)meterX, (float)meterY, (float)meterW, (float)meterH, 8.0f);
-    g.setColour(juce::Colour(0xffd9bd62));
-    g.fillRoundedRectangle((float)meterX + 7.0f, (float)meterY + 7.0f,
-                           (float)meterW - 14.0f, (float)meterH - 14.0f, 6.0f);
+    g.setFont(juce::FontOptions(34.0f).withStyle("Bold"));
+    g.drawText("WADIDAW", 0, 18, w, 42, juce::Justification::centred);
+    g.setColour(juce::Colour(0xff222222));
+    g.setFont(juce::FontOptions(11.0f).withStyle("Bold"));
+    g.drawText("S A T U R A T I O N   /   C L I P P E R", 0, 64, w, 18, juce::Justification::centred);
+
+    // Three main chassis sections.
+    auto drawPanel = [&](int x, int y, int ww, int hh)
+    {
+        g.setColour(juce::Colour(0xff151616));
+        g.fillRoundedRectangle((float)x, (float)y, (float)ww, (float)hh, 9.0f);
+        g.setColour(juce::Colour(0xff7d786f));
+        g.fillRoundedRectangle((float)x + 7.0f, (float)y + 7.0f,
+                               (float)ww - 14.0f, (float)hh - 14.0f, 6.0f);
+    };
+
+    drawPanel(lx - 10, 126, pw + 20, footerY - 136);
+    drawPanel(cx - 8, 126, cw + 16, footerY - 136);
+    drawPanel(rx - 10, 126, pw + 20, footerY - 136);
+
+    g.setColour(juce::Colour(0xff111111));
+    g.setFont(juce::FontOptions(21.0f).withStyle("Bold"));
+    g.drawText("SOFT CLIP", lx, 138, pw, 28, juce::Justification::centred);
+    g.drawText("DRIVE", rx, 138, pw, 28, juce::Justification::centred);
+
+    // Single dedicated GR VU meter in the centre. Only the number of needles changes.
+    const int meterX = cx + 10;
+    const int meterY = 166;
+    const int meterW = cw - 20;
+    const int meterH = 132;
+    g.setColour(juce::Colour(0xff171818));
+    g.fillRoundedRectangle((float)meterX, (float)meterY, (float)meterW, (float)meterH, 7.0f);
+    g.setColour(juce::Colour(0xffe1c86c));
+    g.fillRoundedRectangle((float)meterX + 6.0f, (float)meterY + 6.0f,
+                           (float)meterW - 12.0f, (float)meterH - 12.0f, 5.0f);
 
     const float centreX = meterX + meterW * 0.5f;
-    const float centreY = meterY + meterH * 0.88f;
-    const float radius = juce::jmin(meterW * 0.38f, meterH * 0.58f);
-    const float a0 = juce::MathConstants<float>::pi * 1.20f;
-    const float a1 = juce::MathConstants<float>::pi * 1.80f;
+    const float centreY = meterY + meterH * 0.82f;
+    const float radius = juce::jmin(meterW * 0.39f, meterH * 0.53f);
+    const float a0 = juce::MathConstants<float>::pi * 1.18f;
+    const float a1 = juce::MathConstants<float>::pi * 1.82f;
 
-    g.setColour(juce::Colour(0xff171815));
+    g.setColour(juce::Colour(0xff222222));
     juce::Path arc;
     arc.addCentredArc(centreX, centreY, radius, radius, 0.0f, a0, a1, true);
     g.strokePath(arc, juce::PathStrokeType(2.0f));
 
-    const float values[] = { -24.0f, -18.0f, -12.0f, -6.0f, 0.0f };
+    const float scale[] = { -24.0f, -18.0f, -12.0f, -6.0f, 0.0f };
     for (int i = 0; i < 5; ++i)
     {
         const float t = i / 4.0f;
         const float a = a0 + (a1 - a0) * t;
         const float ri = radius - 2.0f;
-        const float ro = radius - 10.0f;
-        g.setColour(juce::Colour(0xff242522));
+        const float ro = radius - 11.0f;
+        g.setColour(juce::Colour(0xff252525));
         g.drawLine(centreX + std::cos(a) * ri, centreY + std::sin(a) * ri,
-                   centreX + std::cos(a) * ro, centreY + std::sin(a) * ro, 1.4f);
+                   centreX + std::cos(a) * ro, centreY + std::sin(a) * ro, 1.2f);
         g.setFont(juce::FontOptions(7.0f).withStyle("Bold"));
-        const int tx = (int)(centreX + std::cos(a) * (radius - 20.0f)) - 14;
-        const int ty = (int)(centreY + std::sin(a) * (radius - 20.0f)) - 5;
-        g.drawText(juce::String(values[i], 0), tx, ty, 28, 10, juce::Justification::centred);
+        g.drawText(juce::String(scale[i], 0),
+                   (int)(centreX + std::cos(a) * (radius - 23.0f)) - 14,
+                   (int)(centreY + std::sin(a) * (radius - 23.0f)) - 5,
+                   28, 10, juce::Justification::centred);
     }
 
     const int mode = (int)p.parameters.getRawParameterValue("processMode")->load();
     const int needleCount = mode == 0 ? 1 : (mode == 1 ? 2 : 3);
     const float threshold = juce::jlimit(-24.0f, 0.0f, p.thresholdForDisplay.load());
 
-    g.setColour(juce::Colours::black);
-    g.setFont(juce::FontOptions(12.0f).withStyle("Bold"));
-    g.drawText("GAIN REDUCTION", meterX, meterY + 6, meterW, 15, juce::Justification::centred);
+    g.setColour(juce::Colour(0xff111111));
+    g.setFont(juce::FontOptions(13.0f).withStyle("Bold"));
+    g.drawText("GAIN REDUCTION", meterX, meterY + 7, meterW, 16, juce::Justification::centred);
 
     for (int i = 0; i < needleCount; ++i)
     {
-        float grDb = 0.0f;
-        if (mode == 0)
-            grDb = p.reduction.load();
-        else
+        float grDb = p.reduction.load();
+        if (mode != 0)
         {
             const float sourceDb = p.monitorPeaks[i].load();
             grDb = -juce::jmax(0.0f, sourceDb - threshold);
         }
-
         grDb = juce::jlimit(-24.0f, 0.0f, grDb);
         const float t = juce::jlimit(0.0f, 1.0f, -grDb / 24.0f);
         const float a = a1 - (a1 - a0) * t;
-        const float length = radius - 16.0f;
-        const float qx = centreX + (needleCount == 1 ? 0.0f : (i - (needleCount - 1) * 0.5f) * 24.0f);
-
-        g.setColour(juce::Colour(0xffff8a2a));
-        g.drawLine(qx, centreY, qx + std::cos(a) * length, centreY + std::sin(a) * length, 2.2f);
-        g.fillEllipse(qx - 2.5f, centreY - 2.5f, 5.0f, 5.0f);
+        const float pivotX = centreX + (needleCount == 1 ? 0.0f : (i - (needleCount - 1) * 0.5f) * 20.0f);
+        const float length = radius - 18.0f;
+        g.setColour(juce::Colour(0xffff5b32));
+        g.drawLine(pivotX, centreY,
+                   pivotX + std::cos(a) * length,
+                   centreY + std::sin(a) * length, 2.4f);
+        g.fillEllipse(pivotX - 3.0f, centreY - 3.0f, 6.0f, 6.0f);
 
         const juce::String label = mode == 0 ? "ST" :
                                    (mode == 1 ? (i == 0 ? "M" : "S") :
                                     (i == 0 ? "LOW" : (i == 1 ? "MID" : "HIGH")));
-        g.setColour(juce::Colours::black);
+        g.setColour(juce::Colour(0xff222222));
         g.setFont(juce::FontOptions(7.0f).withStyle("Bold"));
-        g.drawText(label, (int)qx - 22, meterY + meterH - 18, 44, 10, juce::Justification::centred);
+        g.drawText(label, (int)pivotX - 22, meterY + meterH - 18, 44, 10, juce::Justification::centred);
     }
 
-    // Central signal field.
-    const int displayBottom = h - 108;
-    auto display = juce::Rectangle<int>(cx, 205, cw, juce::jmax(185, displayBottom - 205));
-    g.setColour(juce::Colours::black);
-    g.fillRoundedRectangle(display.toFloat(), 4.0f);
+    // Centre signal field.
+    const int displayX = cx + 10;
+    const int displayY = 312;
+    const int displayW = cw - 20;
+    const int displayH = juce::jmax(150, footerY - displayY - 18);
+    g.setColour(juce::Colour(0xff080909));
+    g.fillRoundedRectangle((float)displayX, (float)displayY, (float)displayW, (float)displayH, 5.0f);
 
-    g.setColour(juce::Colour(0xff414141));
-    for (int i = 1; i < 7; ++i)
-        g.drawHorizontalLine(display.getY() + i * display.getHeight() / 7,
-                             (float)display.getX(), (float)display.getRight());
-    for (int i = 1; i < 5; ++i)
-        g.drawVerticalLine(display.getX() + i * display.getWidth() / 5,
-                           (float)display.getY(), (float)display.getBottom());
-
-    // Live signal numbers are deliberately inside the field.
+    // Field header with realtime signal values.
     g.setColour(juce::Colour(0xffff8a2a));
-    g.setFont(juce::FontOptions(10.0f).withStyle("Bold"));
+    g.setFont(juce::FontOptions(9.0f).withStyle("Bold"));
     g.drawText("INPUT  " + juce::String(p.inputPeak.load(), 1) + " dB",
-               display.getX() + 10, display.getY() + 8, display.getWidth() / 3 - 10, 16,
-               juce::Justification::left);
+               displayX + 8, displayY + 8, displayW / 3 - 8, 15, juce::Justification::left);
     g.drawText("GR  " + juce::String(p.reduction.load(), 1) + " dB",
-               display.getX() + display.getWidth() / 3, display.getY() + 8,
-               display.getWidth() / 3, 16, juce::Justification::centred);
+               displayX + displayW / 3, displayY + 8, displayW / 3, 15, juce::Justification::centred);
     g.drawText("OUTPUT  " + juce::String(p.outputPeak.load(), 1) + " dB",
-               display.getX() + 2 * display.getWidth() / 3, display.getY() + 8,
-               display.getWidth() / 3 - 10, 16, juce::Justification::right);
+               displayX + 2 * displayW / 3, displayY + 8, displayW / 3 - 8, 15, juce::Justification::right);
 
+    g.setColour(juce::Colour(0xff343434));
+    for (int i = 1; i < 7; ++i)
+        g.drawHorizontalLine(displayY + 30 + i * (displayH - 38) / 7,
+                             (float)displayX, (float)(displayX + displayW));
+    for (int i = 1; i < 5; ++i)
+        g.drawVerticalLine(displayX + i * displayW / 5,
+                           (float)displayY + 25.0f, (float)(displayY + displayH));
+
+    // dB scale at left of the signal field.
+    g.setColour(juce::Colour(0xff999999));
+    g.setFont(juce::FontOptions(7.0f));
+    const float dbScale[] = { 0.0f, -6.0f, -12.0f, -18.0f, -24.0f };
+    for (int i = 0; i < 5; ++i)
+        g.drawText(juce::String(dbScale[i], 0), displayX - 28,
+                   displayY + 34 + i * (displayH - 48) / 4,
+                   25, 10, juce::Justification::right);
+
+    // Threshold guide: 0 dB at the top, more negative values lower down.
     const float thresholdT = juce::jlimit(0.0f, 1.0f, -threshold / 24.0f);
-    const float thresholdY = display.getY() + display.getHeight() * thresholdT;
-    const float dashPattern[] = { 5.0f, 4.0f };
+    const float thresholdY = displayY + 28.0f + thresholdT * (displayH - 42.0f);
+    const float dashPattern[] = { 6.0f, 4.0f };
     g.setColour(juce::Colour(0xffff8a2a));
-    g.drawDashedLine(juce::Line<float>((float)display.getX(), thresholdY,
-                                       (float)display.getRight(), thresholdY),
+    g.drawDashedLine(juce::Line<float>((float)displayX, thresholdY,
+                                       (float)(displayX + displayW), thresholdY),
                      dashPattern, 2, 0.0f);
-    g.setFont(juce::FontOptions(8.0f).withStyle("Bold"));
+    g.setFont(juce::FontOptions(7.0f).withStyle("Bold"));
     g.drawText("THRESHOLD " + juce::String(threshold, 1) + " dB",
-               display.getX() + 8, display.getY() + 28, 150, 12, juce::Justification::left);
+               displayX + 8, (int)thresholdY - 15, 130, 11, juce::Justification::left);
 
-    // Static transfer reference.
-    juce::Path transfer;
-    for (int i = 0; i <= 80; ++i)
-    {
-        const float t = i / 80.0f;
-        const float xx = display.getX() + 24.0f + t * (display.getWidth() - 48.0f);
-        const float shaped = 0.5f + 0.42f * std::tanh((t - 0.5f) * 3.0f);
-        const float yy = display.getBottom() - 24.0f - shaped * (display.getHeight() - 58.0f);
-        if (i == 0) transfer.startNewSubPath(xx, yy);
-        else transfer.lineTo(xx, yy);
-    }
-    g.setColour(juce::Colour(0xff555555));
-    g.strokePath(transfer, juce::PathStrokeType(1.0f));
-
-    // Live audio history.
+    // Live waveform from the audio history buffer.
     juce::Path inputPath, outputPath;
     const int write = p.historyWrite.load();
     for (int i = 0; i < 256; ++i)
     {
         const int index = (write + i) & 255;
-        const float inputAmp = juce::jlimit(0.0f, 1.0f,
-            juce::Decibels::decibelsToGain(juce::jlimit(-48.0f, 6.0f, p.inputHistory[index])));
-        const float outputAmp = juce::jlimit(0.0f, 1.0f,
-            juce::Decibels::decibelsToGain(juce::jlimit(-48.0f, 6.0f, p.outputHistory[index])));
-        const float xx = display.getX() + display.getWidth() * i / 255.0f;
-        const float yyIn = display.getCentreY() - inputAmp * display.getHeight() * 0.27f;
-        const float yyOut = display.getCentreY() + outputAmp * display.getHeight() * 0.27f;
+        const float inAmp = juce::jlimit(0.0f, 1.0f, std::abs(p.inputHistory[index]));
+        const float outAmp = juce::jlimit(0.0f, 1.0f, std::abs(p.outputHistory[index]));
+        const float xx = displayX + displayW * i / 255.0f;
+        const float yyIn = displayY + displayH * 0.56f - inAmp * displayH * 0.42f;
+        const float yyOut = displayY + displayH * 0.56f - outAmp * displayH * 0.30f;
         if (i == 0)
         {
             inputPath.startNewSubPath(xx, yyIn);
@@ -178,17 +192,42 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
             outputPath.lineTo(xx, yyOut);
         }
     }
-    g.setColour(juce::Colour(0x99eeeeee));
-    g.strokePath(inputPath, juce::PathStrokeType(1.1f));
-    g.setColour(juce::Colour(0x99f3372f));
-    g.strokePath(outputPath, juce::PathStrokeType(1.5f));
+    g.setColour(juce::Colour(0xffeeeeee));
+    g.strokePath(inputPath, juce::PathStrokeType(1.3f));
+    g.setColour(juce::Colour(0xfff3372f));
+    g.strokePath(outputPath, juce::PathStrokeType(1.7f));
 
-    const int monitorY = display.getBottom() - 31;
     g.setColour(juce::Colour(0xff777777));
-    g.setFont(juce::FontOptions(8.0f).withStyle("Bold"));
+    g.setFont(juce::FontOptions(7.0f).withStyle("Bold"));
     g.drawText(mode == 0 ? "STEREO SIGNAL" : (mode == 1 ? "M / S SIGNAL" : "MULTI BAND SIGNAL"),
-               display.getX() + 8, monitorY, display.getWidth() - 16, 12,
-               juce::Justification::centred);
+               displayX + 8, displayY + displayH - 15, displayW - 16, 10, juce::Justification::centred);
+
+    // Left controls.
+    g.setColour(juce::Colour(0xff222222));
+    g.setFont(juce::FontOptions(9.0f).withStyle("Bold"));
+    g.drawText("CLIP STYLE", lx, 382, pw, 12, juce::Justification::left);
+    g.drawText("OVERSAMPLING", lx, 416, pw, 12, juce::Justification::left);
+    g.drawText("PROCESS MODE", lx, 450, pw, 12, juce::Justification::left);
+
+    // Right controls.
+    g.drawText("DRIVE MODE", rx, 292, pw, 12, juce::Justification::left);
+    g.drawText("DRIVE FILTERS", rx, 374, pw, 12, juce::Justification::left);
+
+    // Footer frame and branding.
+    g.setColour(juce::Colour(0xff171818));
+    g.fillRoundedRectangle(22.0f, (float)footerY, (float)w - 44.0f, 66.0f, 8.0f);
+    g.setColour(juce::Colour(0xffaaa49a));
+    g.fillRoundedRectangle(28.0f, (float)footerY + 6.0f, (float)w - 56.0f, 54.0f, 5.0f);
+    g.setColour(juce::Colour(0xff202020));
+    g.setFont(juce::FontOptions(20.0f).withStyle("Bold"));
+    g.drawText("WADIDAW", 44, footerY + 20, 150, 25, juce::Justification::left);
+    g.setFont(juce::FontOptions(7.0f));
+    g.drawText("SATURATION / CLIPPER", 44, footerY + 43, 150, 10, juce::Justification::left);
+
+    // Footer separators.
+    g.setColour(juce::Colour(0xff68635c));
+    g.drawVerticalLine(w / 2 - 150, (float)footerY + 12.0f, (float)footerY + 54.0f);
+    g.drawVerticalLine(w - 300, (float)footerY + 12.0f, (float)footerY + 54.0f);
 
     const int clipStyle = (int)p.parameters.getRawParameterValue("clipStyle")->load();
     const int oversampling = (int)p.parameters.getRawParameterValue("oversampling")->load();
