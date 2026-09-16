@@ -8,7 +8,7 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
 private:
-    void timerCallback() override { repaint(); }
+    void timerCallback() override { p.copyAB(activeB); repaint(); }
     MaDriveAudioProcessor& p;
     juce::OwnedArray<juce::Slider> knobs;
     juce::OwnedArray<juce::Label> labels;
