@@ -67,6 +67,7 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
 
     const int mode = (int)p.parameters.getRawParameterValue("processMode")->load();
     const int needleCount = mode == 0 ? 1 : (mode == 1 ? 2 : 3);
+    const float threshold = juce::jlimit(-24.0f, 0.0f, p.thresholdForDisplay.load());
 
     g.setColour(juce::Colours::black);
     g.setFont(juce::FontOptions(12.0f).withStyle("Bold"));
@@ -78,20 +79,20 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
         if (mode == 0)
             grDb = p.reduction.load();
         else
-            grDb = p.monitorPeaks[i].load();
+        {
+            const float sourceDb = p.monitorPeaks[i].load();
+            grDb = -juce::jmax(0.0f, sourceDb - threshold);
+        }
 
         grDb = juce::jlimit(-24.0f, 0.0f, grDb);
         const float t = juce::jlimit(0.0f, 1.0f, -grDb / 24.0f);
         const float a = a1 - (a1 - a0) * t;
         const float length = radius - 16.0f;
-        const float ex = centreX + std::cos(a) * length;
-        const float ey = centreY + std::sin(a) * length;
         const float qx = centreX + (needleCount == 1 ? 0.0f : (i - (needleCount - 1) * 0.5f) * 24.0f);
 
         g.setColour(juce::Colour(0xffff8a2a));
         g.drawLine(qx, centreY, qx + std::cos(a) * length, centreY + std::sin(a) * length, 2.2f);
         g.fillEllipse(qx - 2.5f, centreY - 2.5f, 5.0f, 5.0f);
-        juce::ignoreUnused(ex, ey);
 
         const juce::String label = mode == 0 ? "ST" :
                                    (mode == 1 ? (i == 0 ? "M" : "S") :
@@ -115,7 +116,7 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
         g.drawVerticalLine(display.getX() + i * display.getWidth() / 5,
                            (float)display.getY(), (float)display.getBottom());
 
-    // Live signal numbers are deliberately inside the field, not hidden in the meter.
+    // Live signal numbers are deliberately inside the field.
     g.setColour(juce::Colour(0xffff8a2a));
     g.setFont(juce::FontOptions(10.0f).withStyle("Bold"));
     g.drawText("INPUT  " + juce::String(p.inputPeak.load(), 1) + " dB",
@@ -128,7 +129,6 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
                display.getX() + 2 * display.getWidth() / 3, display.getY() + 8,
                display.getWidth() / 3 - 10, 16, juce::Justification::right);
 
-    const float threshold = juce::jlimit(-24.0f, 0.0f, p.thresholdForDisplay.load());
     const float thresholdT = juce::jlimit(0.0f, 1.0f, -threshold / 24.0f);
     const float thresholdY = display.getY() + display.getHeight() * thresholdT;
     const float dashPattern[] = { 5.0f, 4.0f };
@@ -183,7 +183,6 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
     g.setColour(juce::Colour(0x99f3372f));
     g.strokePath(outputPath, juce::PathStrokeType(1.5f));
 
-    // Small monitor status line, without another meter competing with the GR meter.
     const int monitorY = display.getBottom() - 31;
     g.setColour(juce::Colour(0xff777777));
     g.setFont(juce::FontOptions(8.0f).withStyle("Bold"));
@@ -196,29 +195,17 @@ void MaDriveAudioProcessorEditor::paint(juce::Graphics& g)
     const int driveMode = (int)p.parameters.getRawParameterValue("driveMode")->load();
 
     for (int i = 0; i < 3; ++i)
-    {
-        const bool on = i == clipStyle;
         buttons[i]->setColour(juce::TextButton::buttonColourId,
-                              on ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
-    }
+                              i == clipStyle ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
     for (int i = 0; i < 4; ++i)
-    {
-        const bool on = i == oversampling;
         buttons[3 + i]->setColour(juce::TextButton::buttonColourId,
-                                  on ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
-    }
+                                  i == oversampling ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
     for (int i = 0; i < 3; ++i)
-    {
-        const bool on = i == mode;
         buttons[7 + i]->setColour(juce::TextButton::buttonColourId,
-                                  on ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
-    }
+                                  i == mode ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
     for (int i = 0; i < 3; ++i)
-    {
-        const bool on = i == driveMode;
         buttons[10 + i]->setColour(juce::TextButton::buttonColourId,
-                                   on ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
-    }
+                                   i == driveMode ? juce::Colour(0xffff8a2a) : juce::Colour(0xff151616));
 
     buttons[14]->setColour(juce::TextButton::buttonColourId,
                            activeB ? juce::Colour(0xff151616) : juce::Colour(0xffff8a2a));
